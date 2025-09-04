@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "tw:build": "npx tailwindcss -i ./src/styles.css -o ./dist/output.css --watch"
+    "tw:build": "node_modules\\.bin\\tailwindcss.cmd -i ./src/styles/globals.css -o ./dist/output.css --watch"
   },
   "dependencies": {
     "next": "15.5.2",
