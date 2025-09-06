@@ -20,7 +20,7 @@ export default function SignupForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+    <div className="max-w-md mx-auto bg-gray-500 p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         
@@ -69,14 +69,12 @@ export default function SignupForm() {
           </select>
         </div>
 
-        
-
-        
 
         {/* College/University */}
         <div>
           <label className="block mb-2 font-medium">College/University</label>
           <input
+            
             type="text"
             name="college"
             placeholder="Enter your college/university"

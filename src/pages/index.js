@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-400 flex flex-col">
       {/* Navbar */}
       <Navbar />
 
@@ -19,7 +19,7 @@ export default function Landing() {
         {/* Call-to-action buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
         <Link href="/LoginForm">
-            <button className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition">
+            <button className="bg-gray-200 text-gray-800 px-6 py-3 rounded hover:bg-gray-300 transition">
             Get Started
             </button>
         </Link>
@@ -30,11 +30,6 @@ export default function Landing() {
         </Link>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="p-6 text-center text-gray-600 border-t mt-auto">
-        &copy; 2025 Alumni Portal. All rights reserved.
-      </footer>
     </div>
   );
 }

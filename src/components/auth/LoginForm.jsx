@@ -12,7 +12,7 @@ const LoginForm = () => {
   };
 
   return (
-    <form onSubmit={handleLogin} className="max-w-md mx-auto mt-10 p-4 border rounded shadow">
+    <form onSubmit={handleLogin} className="max-w-md mx-auto mt-10 bg-slate-500 p-4 border rounded shadow">
       <h2 className="text-xl font-bold mb-4">Login</h2>
       <input
         type="email"
