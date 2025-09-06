@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 export default function SignupForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     role: "",
     email: "",
@@ -13,17 +15,54 @@ export default function SignupForm() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
-    // TODO: send data to backend API
+
+    try {
+      const res = await fetch("http://localhost:5000/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        console.log("User created:", data);
+
+        // Redirect after successful signup
+        router.push("/profile");
+      } else {
+        const errorData = await res.json();
+        alert(errorData.error || "Signup failed");
+      }
+    } catch (err) {
+      console.error("Error signing up:", err);
+      alert("Something went wrong. Please try again.");
+    }
   };
 
   return (
     <div className="max-w-md mx-auto bg-gray-500 p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        
+
+        {/* Role Dropdown */}
+        <div>
+          <label className="block mb-2 font-medium">Role</label>
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="">Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="student">Student</option>
+            <option value="alumni">Alumni</option>
+          </select>
+        </div>
+
         {/* Name */}
         <div>
           <label className="block mb-2 font-medium">Name</label>
@@ -52,29 +91,10 @@ export default function SignupForm() {
           />
         </div>
 
-        {/* Role Dropdown */}
-        <div>
-          <label className="block mb-2 font-medium">Role</label>
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="">Select Role</option>
-            <option value="admin">Admin</option>
-            <option value="student">Student</option>
-            <option value="alumni">Alumni</option>
-          </select>
-        </div>
-
-
         {/* College/University */}
         <div>
           <label className="block mb-2 font-medium">College/University</label>
           <input
-            
             type="text"
             name="college"
             placeholder="Enter your college/university"
