@@ -24,6 +24,7 @@ const LoginForm = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, email, password }),
+        credentials: "include",
       });
 
       const text = await res.text(); // get raw response
