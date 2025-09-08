@@ -61,8 +61,8 @@ export default function Profile() {
               <p><strong>Email:</strong> {userData?.email}</p>
               <p><strong>Role:</strong> {userData?.role}</p>
               <p><strong>Batch Year:</strong> {userData?.batch_year}</p>
-              <p><strong>Degree:</strong> {userData?.degree}</p>
-              <p><strong>Department:</strong> {userData?.department}</p>
+              <p><strong>Course:</strong> {userData?.course}</p>
+              <p><strong>Branch:</strong> {userData?.branch}</p>
             </div>
 
             <button
