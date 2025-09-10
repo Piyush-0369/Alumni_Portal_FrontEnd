@@ -3,23 +3,50 @@ import Navbar from "../components/ui/Navbar";
 
 export default function Profile() {
   const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Try to load user data from localStorage
     const saved = localStorage.getItem("userData");
     if (saved) {
       try {
         setUserData(JSON.parse(saved));
-      } catch {
-        console.error("Failed to parse userData");
+      } catch (err) {
+        console.error("Failed to parse userData:", err);
         setUserData({ error: "Invalid stored data" });
       }
     }
+    setLoading(false);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("userData");
-    window.location.href = "/"; // redirect to login
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/v1/baseUsers/logout", {
+        method: "POST",
+        credentials: "include", // send cookies with request
+      });
+
+      if (response.ok) {
+        localStorage.removeItem("userData");
+        window.location.href = "/"; // redirect to login
+      } else {
+        const err = await response.json();
+        console.error("Logout failed:", err?.message || "Unknown error");
+        alert("Logout failed: " + (err?.message || "Please try again"));
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+      alert("Error connecting to server.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-500 flex items-center justify-center text-white">
+        Loading profile...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-500">
@@ -27,10 +54,12 @@ export default function Profile() {
       <main className="p-8 text-black flex flex-col items-center">
         <h2 className="text-2xl font-bold mb-6">Alumni Profile</h2>
 
+        {/* No data */}
         {!userData && (
           <p className="text-white">This is where alumni details will be displayed.</p>
         )}
 
+        {/* Error case */}
         {userData?.error && (
           <div className="max-w-md bg-red-200 p-4 rounded shadow text-center">
             <h3 className="text-xl font-bold mb-2">Login Failed</h3>
@@ -44,6 +73,7 @@ export default function Profile() {
           </div>
         )}
 
+        {/* Success case */}
         {userData && !userData.error && (
           <div className="max-w-lg w-full bg-white p-6 rounded shadow flex flex-col items-center">
             {userData?.avatar && (
