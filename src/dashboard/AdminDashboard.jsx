@@ -81,12 +81,12 @@ const EventForm = () => {
   );
 };
 
-// Verify Alumni
+// Verify Alumni (with Verify + Deny)
 const VerifyAlumni = () => {
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [verifying, setVerifying] = useState(null);
+  const [processing, setProcessing] = useState(null);
 
   useEffect(() => {
     const fetchPendingAlumni = async () => {
@@ -117,11 +117,14 @@ const VerifyAlumni = () => {
     fetchPendingAlumni();
   }, []);
 
-  const handleVerify = async (id) => {
+  const handleAction = async (id, action) => {
     try {
-      setVerifying(id);
+      setProcessing(id + action);
+      const endpoint =
+        action === "verify" ? "verify-Alumni" : "deny-Alumni";
+
       const res = await fetch(
-        `http://localhost:4000/api/v1/admins/verify-Alumni`,
+        `http://localhost:4000/api/v1/admins/${endpoint}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -131,17 +134,21 @@ const VerifyAlumni = () => {
       );
 
       if (res.ok) {
-        alert("Alumni verified successfully!");
+        alert(
+          action === "verify"
+            ? "Alumni verified successfully!"
+            : "Alumni denied successfully!"
+        );
         setPending((prev) => prev.filter((alum) => alum._id !== id));
       } else {
         const errData = await res.json();
-        alert(errData?.message || "Failed to verify alumni");
+        alert(errData?.message || `Failed to ${action} alumni`);
       }
     } catch (err) {
       console.error(err);
-      alert("Error verifying alumni");
+      alert(`Error while trying to ${action} alumni`);
     } finally {
-      setVerifying(null);
+      setProcessing(null);
     }
   };
 
@@ -164,17 +171,30 @@ const VerifyAlumni = () => {
               {alum.first_name} {alum.middle_name || ""} {alum.last_name} — Batch{" "}
               {alum.batch_year}
             </span>
-            <button
-              onClick={() => handleVerify(alum._id)}
-              disabled={verifying === alum._id}
-              className={`px-3 py-1 rounded-lg text-white font-medium ${
-                verifying === alum._id
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-amber-400 hover:bg-amber-500"
-              } transition`}
-            >
-              {verifying === alum._id ? "Verifying..." : "Verify"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleAction(alum._id, "verify")}
+                disabled={processing === alum._id + "verify"}
+                className={`px-3 py-1 rounded-lg text-white font-medium ${
+                  processing === alum._id + "verify"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-emerald-500 hover:bg-emerald-600"
+                } transition`}
+              >
+                {processing === alum._id + "verify" ? "Verifying..." : "Verify"}
+              </button>
+              <button
+                onClick={() => handleAction(alum._id, "deny")}
+                disabled={processing === alum._id + "deny"}
+                className={`px-3 py-1 rounded-lg text-white font-medium ${
+                  processing === alum._id + "deny"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500 hover:bg-red-600"
+                } transition`}
+              >
+                {processing === alum._id + "deny" ? "Denying..." : "Deny"}
+              </button>
+            </div>
           </li>
         ))}
       </ul>
