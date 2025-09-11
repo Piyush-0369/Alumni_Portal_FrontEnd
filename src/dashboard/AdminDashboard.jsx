@@ -81,7 +81,7 @@ const EventForm = () => {
   );
 };
 
-// Verify Alumni (with Verify + Deny)
+// Verify Alumni (with updated Verify button)
 const VerifyAlumni = () => {
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,17 +120,28 @@ const VerifyAlumni = () => {
   const handleAction = async (id, action) => {
     try {
       setProcessing(id + action);
+
       const endpoint =
         action === "verify" ? "verify-Alumni" : "deny-Alumni";
 
+      const options =
+        action === "verify"
+          ? {
+              method: "POST", // backend expects POST for verify
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ alumni_id: id }),
+              credentials: "include",
+            }
+          : {
+              method: "DELETE", // backend expects DELETE for deny
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ alumni_id: id }), // backend expects "alumni"
+              credentials: "include",
+            };
+
       const res = await fetch(
         `http://localhost:4000/api/v1/admins/${endpoint}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ alumni_id: id }),
-          credentials: "include",
-        }
+        options
       );
 
       if (res.ok) {
@@ -152,6 +163,7 @@ const VerifyAlumni = () => {
     }
   };
 
+
   if (loading) return <p>Loading pending alumni...</p>;
   if (error) return <p className="text-red-500">Error: {error}</p>;
   if (pending.length === 0) return <p>No pending alumni to verify.</p>;
@@ -172,17 +184,21 @@ const VerifyAlumni = () => {
               {alum.batch_year}
             </span>
             <div className="flex gap-2">
+              {/* Verify button */}
               <button
                 onClick={() => handleAction(alum._id, "verify")}
                 disabled={processing === alum._id + "verify"}
-                className={`px-3 py-1 rounded-lg text-white font-medium ${
-                  processing === alum._id + "verify"
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-emerald-500 hover:bg-emerald-600"
-                } transition`}
+                className={`px-3 py-1 rounded-lg text-white font-semibold shadow-md transition 
+                  ${
+                    processing === alum._id + "verify"
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-black"
+                  }`}
               >
                 {processing === alum._id + "verify" ? "Verifying..." : "Verify"}
               </button>
+
+              {/* Deny button */}
               <button
                 onClick={() => handleAction(alum._id, "deny")}
                 disabled={processing === alum._id + "deny"}
