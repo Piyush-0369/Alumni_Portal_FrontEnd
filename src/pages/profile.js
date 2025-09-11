@@ -6,7 +6,6 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Try to load user data from localStorage
     const saved = localStorage.getItem("userData");
     if (saved) {
       try {
@@ -23,15 +22,14 @@ export default function Profile() {
     try {
       const response = await fetch("http://localhost:4000/api/v1/baseUsers/logout", {
         method: "POST",
-        credentials: "include", // send cookies with request
+        credentials: "include",
       });
 
       if (response.ok) {
         localStorage.removeItem("userData");
-        window.location.href = "/"; // redirect to login
+        window.location.href = "/";
       } else {
         const err = await response.json();
-        console.error("Logout failed:", err?.message || "Unknown error");
         alert("Logout failed: " + (err?.message || "Please try again"));
       }
     } catch (error) {
@@ -42,26 +40,26 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-500 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-gradient-to-br from-peach-200 to-mint-200 flex items-center justify-center text-white">
         Loading profile...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-500">
+    <div className="min-h-screen bg-gradient-to-br from-peach-200 to-mint-200">
       <Navbar />
-      <main className="p-8 text-black flex flex-col items-center">
-        <h2 className="text-2xl font-bold mb-6">Profile</h2>
+      <main className="p-8 flex flex-col items-center">
+        <h2 className="text-3xl font-bold mb-6 text-gray-800">Profile</h2>
 
         {/* No data */}
         {!userData && (
-          <p className="text-white">This is where profile details will be displayed.</p>
+          <p className="text-gray-800">This is where profile details will be displayed.</p>
         )}
 
         {/* Error case */}
         {userData?.error && (
-          <div className="max-w-md bg-red-200 p-4 rounded shadow text-center">
+          <div className="max-w-md bg-red-200 p-6 rounded-2xl shadow text-center">
             <h3 className="text-xl font-bold mb-2">Login Failed</h3>
             <p>{userData.error}</p>
             <button
@@ -75,7 +73,7 @@ export default function Profile() {
 
         {/* Success case */}
         {userData && !userData.error && (
-          <div className="max-w-lg w-full bg-white p-6 rounded shadow flex flex-col items-center">
+          <div className="max-w-lg w-full bg-peach-50/90 p-8 rounded-2xl shadow flex flex-col items-center">
             {userData?.avatar && (
               <img
                 src={userData.avatar}
@@ -83,33 +81,30 @@ export default function Profile() {
                 className="w-32 h-32 rounded-full mb-4"
               />
             )}
-            <h3 className="text-xl font-bold mb-4 text-center">
-              Welcome, {userData?.first_name}{" "}
-              {userData?.middle_name && `${userData.middle_name} `}
-              {userData?.last_name}
+            <h3 className="text-2xl font-bold mb-4 text-gray-800 text-center">
+              Welcome, {userData.first_name}{" "}
+              {userData.middle_name && `${userData.middle_name} `} 
+              {userData.last_name}
             </h3>
 
-            {/* Common Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-              <p><strong>Email:</strong> {userData?.email}</p>
-              <p><strong>Role:</strong> {userData?.role}</p>
-              <p><strong>Batch Year:</strong> {userData?.batch_year}</p>
+              <p><strong>Email:</strong> {userData.email}</p>
+              <p><strong>Role:</strong> {userData.role}</p>
+              <p><strong>Batch Year:</strong> {userData.batch_year}</p>
             </div>
 
-            {/* Student Fields */}
-            {userData?.role === "student" && (
+            {userData.role === "student" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mt-4">
-                <p><strong>College Roll:</strong> {userData?.college_roll}</p>
-                <p><strong>Course:</strong> {userData?.course}</p>
-                <p><strong>Branch:</strong> {userData?.branch}</p>
+                <p><strong>College Roll:</strong> {userData.college_roll}</p>
+                <p><strong>Course:</strong> {userData.course}</p>
+                <p><strong>Branch:</strong> {userData.branch}</p>
               </div>
             )}
 
-            {/* Alumni Fields */}
-            {userData?.role === "alumni" && (
+            {userData.role === "alumni" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mt-4">
-                <p><strong>Degree:</strong> {userData?.degree}</p>
-                <p><strong>Department:</strong> {userData?.department}</p>
+                <p><strong>Degree:</strong> {userData.degree}</p>
+                <p><strong>Department:</strong> {userData.department}</p>
               </div>
             )}
 

@@ -4,48 +4,41 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("events");
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center">Admin Dashboard</h1>
+    <div className="min-h-screen bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200 p-6">
+      <h1 className="text-3xl font-bold mb-6 text-center text-emerald-800">
+        Admin Dashboard
+      </h1>
 
       {/* Navigation Tabs */}
       <div className="flex justify-center gap-4 mb-8">
-        <button
-          onClick={() => setActiveTab("events")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "events" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          Create Event
-        </button>
-        <button
-          onClick={() => setActiveTab("alumni")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "alumni" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          Check Alumni
-        </button>
-        <button
-          onClick={() => setActiveTab("verify")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "verify" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
-        >
-          Verify Alumni
-        </button>
+        {[
+          { id: "events", label: "Create Event" },
+          { id: "verify", label: "Verify Alumni" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              activeTab === tab.id
+                ? "bg-amber-400 text-white shadow-md"
+                : "bg-emerald-200 text-emerald-800 hover:bg-emerald-300"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white p-6 rounded shadow">
+      <div className="bg-[var(--color-surface)] p-6 rounded-2xl shadow-lg">
         {activeTab === "events" && <EventForm />}
-        {activeTab === "alumni" && <AlumniList />}
         {activeTab === "verify" && <VerifyAlumni />}
       </div>
     </div>
   );
 };
 
-// Form to create events
+// Event creation form
 const EventForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -54,27 +47,33 @@ const EventForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-xl font-semibold">Create a New Event</h2>
+      <h2 className="text-2xl font-semibold text-emerald-800 mb-2">
+        Create a New Event
+      </h2>
       <input
         type="text"
         placeholder="Event Title"
-        className="w-full border p-2 rounded"
+        className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
         required
       />
-      <input type="date" className="w-full border p-2 rounded" required />
+      <input
+        type="date"
+        className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+        required
+      />
       <input
         type="text"
         placeholder="Event Location"
-        className="w-full border p-2 rounded"
+        className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
       />
       <textarea
         placeholder="Event Description"
-        className="w-full border p-2 rounded"
+        className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
         required
       ></textarea>
       <button
         type="submit"
-        className="bg-green-500 text-white px-4 py-2 rounded"
+        className="bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500 transition-colors"
       >
         Create Event
       </button>
@@ -82,33 +81,12 @@ const EventForm = () => {
   );
 };
 
-// List of alumni (mock for now)
-const AlumniList = () => {
-  const alumni = [
-    { id: 1, name: "Piyush Sharma", batch: 2022 },
-    { id: 2, name: "Rohit Mehra", batch: 2021 },
-  ];
-
-  return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">All Alumni</h2>
-      <ul className="space-y-2">
-        {alumni.map((alum) => (
-          <li key={alum.id} className="p-3 border rounded">
-            {alum.name} — Batch {alum.batch}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
-
-// Verify alumni (real API call)
+// Verify Alumni
 const VerifyAlumni = () => {
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [verifying, setVerifying] = useState(null); // Track which alumni is being verified
+  const [verifying, setVerifying] = useState(null);
 
   useEffect(() => {
     const fetchPendingAlumni = async () => {
@@ -129,7 +107,7 @@ const VerifyAlumni = () => {
         const data = await response.json();
         setPending(data?.data?.[0]?.data || []);
       } catch (err) {
-        console.error("Error fetching pending alumni:", err);
+        console.error(err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -173,12 +151,14 @@ const VerifyAlumni = () => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Verify Alumni</h2>
+      <h2 className="text-2xl font-semibold text-emerald-800 mb-4">
+        Verify Alumni
+      </h2>
       <ul className="space-y-2">
         {pending.map((alum) => (
           <li
             key={alum._id}
-            className="p-3 border rounded flex justify-between items-center"
+            className="p-3 border rounded-lg shadow-sm flex justify-between items-center bg-emerald-50"
           >
             <span>
               {alum.first_name} {alum.middle_name || ""} {alum.last_name} — Batch{" "}
@@ -187,9 +167,11 @@ const VerifyAlumni = () => {
             <button
               onClick={() => handleVerify(alum._id)}
               disabled={verifying === alum._id}
-              className={`px-3 py-1 rounded text-white ${
-                verifying === alum._id ? "bg-gray-400" : "bg-blue-500"
-              }`}
+              className={`px-3 py-1 rounded-lg text-white font-medium ${
+                verifying === alum._id
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-amber-400 hover:bg-amber-500"
+              } transition`}
             >
               {verifying === alum._id ? "Verifying..." : "Verify"}
             </button>
