@@ -40,42 +40,112 @@ const AdminDashboard = () => {
 
 // Event creation form
 const EventForm = () => {
-  const handleSubmit = (e) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Event created (hook this to backend later)");
+    setLoading(true);
+
+    const formData = new FormData(e.target); // collects all fields
+
+    try {
+      const res = await fetch("http://localhost:4000/api/v1/admins/createEvent", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData?.message || "Failed to create event");
+      }
+
+      alert("✅ Event created successfully!");
+      e.target.reset();
+    } catch (err) {
+      console.error(err);
+      alert(`❌ ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-2xl font-semibold text-emerald-800 mb-2">
+      <h2 className="text-2xl font-semibold text-emerald-800 mb-4">
         Create a New Event
       </h2>
+
+      {/* Title */}
       <input
         type="text"
+        name="title"
         placeholder="Event Title"
-        className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+        className="w-full border border-emerald-200 bg-white/60 p-3 rounded-lg 
+                   focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
         required
       />
-      <input
-        type="date"
-        className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
-        required
-      />
-      <input
-        type="text"
-        placeholder="Event Location"
-        className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
-      />
+
+      {/* Description */}
       <textarea
+        name="description"
         placeholder="Event Description"
-        className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+        rows="4"
+        className="w-full border border-emerald-200 bg-white/60 p-3 rounded-lg 
+                   focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
         required
       ></textarea>
+
+      {/* Date */}
+      <input
+        type="date"
+        name="date"
+        className="w-full border border-emerald-200 bg-white/60 p-3 rounded-lg 
+                   focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+        required
+      />
+
+      {/* Time */}
+      <input
+        type="time"
+        name="time"
+        className="w-full border border-emerald-200 bg-white/60 p-3 rounded-lg 
+                   focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+        required
+      />
+
+      {/* Location */}
+      <input
+        type="text"
+        name="location"
+        placeholder="Event Location"
+        className="w-full border border-emerald-200 bg-white/60 p-3 rounded-lg 
+                   focus:outline-none focus:ring-2 focus:ring-amber-400 transition"
+        required
+      />
+
+      {/* Banner Image */}
+      <input
+        type="file"
+        name="banner"
+        accept="image/*"
+        className="w-full border border-emerald-200 bg-white/60 p-3 rounded-lg 
+                   focus:outline-none focus:ring-2 focus:ring-amber-400 transition
+                   file:mr-4 file:py-2 file:px-4 file:rounded-lg 
+                   file:border-0 file:text-sm file:font-semibold 
+                   file:bg-amber-400 file:text-white hover:file:bg-amber-500"
+        required
+      />
+
+      {/* Submit Button */}
       <button
         type="submit"
-        className="bg-amber-400 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-500 transition-colors"
+        disabled={loading}
+        className="w-full bg-amber-400 text-white px-4 py-2 rounded-lg 
+                   font-semibold shadow-md hover:bg-amber-500 transition-colors 
+                   disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Create Event
+        {loading ? "Creating..." : "Create Event"}
       </button>
     </form>
   );
