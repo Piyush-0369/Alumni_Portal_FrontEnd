@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { fetchWithRefresh } from "../../utils/fetchWithRefresh";
 
 export default function SignupForm() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function SignupForm() {
         : "http://localhost:4000/api/v1/alumni/registerAlumni";
 
     try {
-      const res = await fetch(url, { method: "POST", body: dataToSend });
+      const res = await fetchWithRefresh(url, { method: "POST", body: dataToSend });
       const data = await res.json();
       if (res.ok) {
         router.push("/profile");

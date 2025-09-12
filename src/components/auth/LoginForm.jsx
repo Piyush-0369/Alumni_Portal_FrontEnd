@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Button from "../ui/Button";
+import { fetchWithRefresh } from "../../utils/fetchWithRefresh";
 
 const BASE_URL = "http://localhost:4000/api/v1/baseUsers";
 
@@ -16,7 +17,7 @@ const LoginForm = () => {
     setErrorMsg("");
 
     try {
-      const res = await fetch(`${BASE_URL}/login`, {
+      const res = await fetchWithRefresh(`${BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, email, password }),

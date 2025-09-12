@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { fetchWithRefresh } from "../utils/fetchWithRefresh";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("events");
@@ -49,7 +50,7 @@ const EventForm = () => {
     const formData = new FormData(e.target); // collects all fields
 
     try {
-      const res = await fetch("http://localhost:4000/api/v1/admins/createEvent", {
+      const res = await fetchWithRefresh("http://localhost:4000/api/v1/admins/createEvent", {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -161,7 +162,7 @@ const VerifyAlumni = () => {
   useEffect(() => {
     const fetchPendingAlumni = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithRefresh(
           "http://localhost:4000/api/v1/admins/pending-approvalAlumni",
           {
             method: "GET",
@@ -209,7 +210,7 @@ const VerifyAlumni = () => {
               credentials: "include",
             };
 
-      const res = await fetch(
+      const res = await fetchWithRefresh(
         `http://localhost:4000/api/v1/admins/${endpoint}`,
         options
       );
