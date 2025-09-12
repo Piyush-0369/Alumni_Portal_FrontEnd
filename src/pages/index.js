@@ -1,11 +1,8 @@
-import Navbar from "../components/ui/Navbar";
 import Link from "next/link";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-slate-400 flex flex-col">
-      {/* Navbar */}
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200">
 
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center text-center p-8 sm:p-20">

@@ -1,11 +1,9 @@
-import Navbar from "../components/ui/Navbar";
+
 import LoginForm from "../components/auth/LoginForm";
 
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200">
-      {/* Navbar */}
-      <Navbar />
 
       {/* Main content */}
       <main className="flex flex-1 items-center justify-center px-4 py-12">

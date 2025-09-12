@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Navbar from "../components/ui/Navbar";
+import { fetchWithRefresh } from "../utils/fetchWithRefresh";
 
 export default function Profile() {
   const [userData, setUserData] = useState(null);
@@ -20,7 +20,7 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/v1/baseUsers/logout", {
+      const response = await fetchWithRefresh("http://localhost:4000/api/v1/baseUsers/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -47,8 +47,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-peach-200 to-mint-200">
-      <Navbar />
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200">
       <main className="p-8 flex flex-col items-center">
         <h2 className="text-3xl font-bold mb-6 text-gray-800">Profile</h2>
 

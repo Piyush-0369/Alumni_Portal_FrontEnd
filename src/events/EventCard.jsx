@@ -1,23 +1,36 @@
-// src/components/events/EventCard.jsx
-
-import React from "react";
-
+// src/events/EventCard.jsx
 const EventCard = ({ event }) => {
   return (
-    <div className="bg-white shadow-lg rounded-2xl p-4 border border-emerald-200 transition hover:shadow-xl">
-      <h3 className="text-xl font-semibold text-emerald-800 mb-2">
-        {event.title}
-      </h3>
-      <p className="text-gray-600 mb-1">
-        <span className="font-medium">Date:</span>{" "}
-        {new Date(event.date).toLocaleDateString()}
-      </p>
-      {event.location && (
-        <p className="text-gray-600 mb-1">
-          <span className="font-medium">Location:</span> {event.location}
-        </p>
+    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition h-72 flex flex-col">
+      {/* Banner Image */}
+      {event.banner && (
+        <img
+          src={event.banner}
+          alt={event.title}
+          className="w-full h-36 object-cover"
+        />
       )}
-      <p className="text-gray-700">{event.description}</p>
+
+      {/* Event Info */}
+      <div className="p-3 flex-1 flex flex-col justify-between">
+        <div>
+          <h2 className="text-lg font-semibold text-emerald-800 mb-1 line-clamp-1">
+            {event.title}
+          </h2>
+          <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+            {event.description}
+          </p>
+        </div>
+
+        <div className="text-xs text-gray-700 space-y-1">
+          <p>
+            <strong>Date:</strong> {new Date(event.date).toLocaleDateString()}
+          </p>
+          <p>
+            <strong>Location:</strong> {event.location}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

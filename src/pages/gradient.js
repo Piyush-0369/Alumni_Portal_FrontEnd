@@ -1,9 +1,7 @@
-import Navbar from "../components/ui/Navbar";
 
 export default function GradientPeachMint() {
   return (
     <div className="min-h-screen bg-black flex flex-col">
-      <Navbar />
       <main className="flex flex-col items-center justify-start p-8 gap-8 flex-1">
         <h1 className="text-white text-3xl font-bold mb-4">Peach & Mint Gradients</h1>
 
