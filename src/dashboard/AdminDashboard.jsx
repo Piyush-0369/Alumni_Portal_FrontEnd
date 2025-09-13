@@ -19,7 +19,7 @@ const AdminDashboard = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-lg font-medium transition ${
+            className={`px-6 py-2 rounded-lg font-medium transition ${
               activeTab === tab.id
                 ? "bg-amber-400 text-white shadow-md"
                 : "bg-emerald-200 text-emerald-800 hover:bg-emerald-300"
