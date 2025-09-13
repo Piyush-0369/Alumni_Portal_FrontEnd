@@ -5,13 +5,14 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("events");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200 p-6">
-      <h1 className="text-3xl font-bold mb-6 text-center text-emerald-800">
+    <div className="min-h-screen bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200 
+                p-6 flex flex-col items-center">
+      <h1 className="text-4xl font-extrabold mb-8 text-emerald-900 tracking-tight drop-shadow-sm">
         Admin Dashboard
       </h1>
 
       {/* Navigation Tabs */}
-      <div className="flex justify-center gap-4 mb-8">
+      <div className="flex justify-center gap-6 mb-10">
         {[
           { id: "events", label: "Create Event" },
           { id: "verify", label: "Verify Alumni" },
@@ -31,7 +32,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-[var(--color-surface)] p-6 rounded-2xl shadow-lg">
+      <div className="w-full max-w-3xl bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-emerald-100">
         {activeTab === "events" && <EventForm />}
         {activeTab === "verify" && <VerifyAlumni />}
       </div>
@@ -198,17 +199,17 @@ const VerifyAlumni = () => {
       const options =
         action === "verify"
           ? {
-              method: "POST", // backend expects POST for verify
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ alumni_id: id }),
-              credentials: "include",
-            }
+            method: "POST", // backend expects POST for verify
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ alumni_id: id }),
+            credentials: "include",
+          }
           : {
-              method: "DELETE", // backend expects DELETE for deny
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ alumni_id: id }), // backend expects "alumni"
-              credentials: "include",
-            };
+            method: "DELETE", // backend expects DELETE for deny
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ alumni_id: id }), // backend expects "alumni"
+            credentials: "include",
+          };
 
       const res = await fetchWithRefresh(
         `http://localhost:4000/api/v1/admins/${endpoint}`,
@@ -260,10 +261,9 @@ const VerifyAlumni = () => {
                 onClick={() => handleAction(alum._id, "verify")}
                 disabled={processing === alum._id + "verify"}
                 className={`px-3 py-1 rounded-lg text-white font-semibold shadow-md transition 
-                  ${
-                    processing === alum._id + "verify"
-                      ? "bg-gray-400 cursor-not-allowed"
-                      : "bg-black"
+                  ${processing === alum._id + "verify"
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-black"
                   }`}
               >
                 {processing === alum._id + "verify" ? "Verifying..." : "Verify"}
@@ -273,11 +273,10 @@ const VerifyAlumni = () => {
               <button
                 onClick={() => handleAction(alum._id, "deny")}
                 disabled={processing === alum._id + "deny"}
-                className={`px-3 py-1 rounded-lg text-white font-medium ${
-                  processing === alum._id + "deny"
+                className={`px-3 py-1 rounded-lg text-white font-medium ${processing === alum._id + "deny"
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-red-500 hover:bg-red-600"
-                } transition`}
+                  } transition`}
               >
                 {processing === alum._id + "deny" ? "Denying..." : "Deny"}
               </button>
