@@ -1,39 +1,50 @@
 // src/pages/index.js
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function Landing() {
   const slides = [
     "/images/hero1.jpg",
-    "/images/hero2.jpeg",
-    "/images/hero3.jpeg",
+    "/images/hero2.jpg",
+    "/images/hero3.jpg",
   ];
 
-  // Duplicate slides so animation looks seamless
-  const loopSlides = [...slides, ...slides];
+  const [index, setIndex] = useState(0);
+
+  // Auto move carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleNext();
+    }, 6000); // change every 6s
+    return () => clearInterval(interval);
+  }, [index]);
+
+  const handlePrev = () => {
+    setIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setIndex((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+  };
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200">
-      {/* Continuous carousel background */}
+      {/* Carousel Background */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="flex h-full"
-          animate={{ x: ["0%", "-50%"] }} // slide left infinitely
-          transition={{
-            repeat: Infinity,
-            duration: 15, // slower = smoother
-            ease: "linear",
-          }}
-        >
-          {loopSlides.map((src, idx) => (
-            <img
-              key={idx}
-              src={src}
-              alt={`slide-${idx}`}
-              className="object-cover w-screen h-full opacity-40"
-            />
-          ))}
-        </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={index}
+            src={slides[index]}
+            alt={`slide-${index}`}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            className="absolute inset-0 object-cover w-full h-full opacity-60"
+          />
+        </AnimatePresence>
       </div>
 
       {/* Overlay content */}
@@ -59,6 +70,22 @@ export default function Landing() {
           </Link>
         </div>
       </main>
+
+      {/* Carousel Navigation */}
+      <div className="absolute inset-0 flex items-center justify-between px-6 z-20">
+        <button
+          onClick={handlePrev}
+          className="bg-black/40 hover:bg-black/60 text-white p-3 rounded-full transition"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <button
+          onClick={handleNext}
+          className="bg-black/40 hover:bg-black/60 text-white p-3 rounded-full transition"
+        >
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
     </div>
   );
 }
