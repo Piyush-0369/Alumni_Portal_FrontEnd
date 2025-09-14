@@ -45,7 +45,10 @@ export default function Landing() {
             className="absolute inset-0 object-cover w-full h-full opacity-60"
           />
         </AnimatePresence>
+        {/* Dark overlay for better text contrast */}
+        <div className="absolute inset-0 bg-white/40"></div>
       </div>
+
 
       {/* Overlay content */}
       <main className="relative flex-1 flex flex-col items-center justify-center text-center p-8 sm:p-20 z-10">
