@@ -1,15 +1,30 @@
-// src/events/EventList.jsx
 import EventCard from "./EventCard";
 
-const EventList = ({ events }) => {
-  if (!Array.isArray(events) || events.length === 0) {
-    return <p className="text-center text-gray-500">No events available.</p>;
-  }
+const EventList = ({ events, setEvents }) => {
+  // Handle event updates (Edit)
+  const handleEventUpdated = (updatedEvent) => {
+    if (!updatedEvent || typeof setEvents !== "function") return;
+    setEvents((prev) =>
+      prev.map((ev) => (ev._id === updatedEvent._id ? updatedEvent : ev))
+    );
+  };
+
+  // Handle event deletion
+  const handleEventDeleted = (deletedId) => {
+    if (!deletedId) return;
+    setEvents((prev) => prev.filter((ev) => ev._id !== deletedId));
+  };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div className="flex flex-wrap gap-6 w-full">
       {events.map((event) => (
-        <EventCard key={event._id} event={event} />
+        <div key={event._id} className="w-full sm:w-1/2 lg:w-1/3">
+          <EventCard
+            event={event}
+            onUpdated={handleEventUpdated}
+            onDeleted={handleEventDeleted} // pass delete handler
+          />
+        </div>
       ))}
     </div>
   );
