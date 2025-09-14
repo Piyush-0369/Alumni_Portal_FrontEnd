@@ -20,10 +20,13 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetchWithRefresh("http://localhost:4000/api/v1/baseUsers/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetchWithRefresh(
+        "http://localhost:4000/api/v1/baseUsers/logout",
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       if (response.ok) {
         localStorage.removeItem("userData");
@@ -34,6 +37,34 @@ export default function Profile() {
       }
     } catch (error) {
       console.error("Error during logout:", error);
+      alert("Error connecting to server.");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!confirm("Are you sure you want to delete your account? This cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const response = await fetchWithRefresh(
+        "http://localhost:4000/api/v1/baseUsers/deleteAccount",
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok) {
+        localStorage.removeItem("userData");
+        alert("Your account has been deleted.");
+        window.location.href = "/";
+      } else {
+        const err = await response.json();
+        alert("Failed to delete account: " + (err?.message || "Please try again"));
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
       alert("Error connecting to server.");
     }
   };
@@ -82,7 +113,7 @@ export default function Profile() {
             )}
             <h3 className="text-2xl font-bold mb-4 text-gray-800 text-center">
               Welcome, {userData.first_name}{" "}
-              {userData.middle_name && `${userData.middle_name} `} 
+              {userData.middle_name && `${userData.middle_name} `}
               {userData.last_name}
             </h3>
 
@@ -107,12 +138,20 @@ export default function Profile() {
               </div>
             )}
 
-            <button
-              className="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+            <div className="flex gap-4 mt-6">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+              <button
+                className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-900"
+                onClick={handleDeleteAccount}
+              >
+                Delete Account
+              </button>
+            </div>
           </div>
         )}
       </main>

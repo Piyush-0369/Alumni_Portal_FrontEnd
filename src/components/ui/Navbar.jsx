@@ -11,7 +11,6 @@ const Navbar = () => {
   }, []);
 
   const commonLinks = [
-    { name: "Profile", href: "/profile" },
     { name: "Events", href: "/events" },
     { name: "Admin", href: "/admin" },
   ];
@@ -50,9 +49,14 @@ const Navbar = () => {
               >
                 Chats
               </Link>
+              <Link
+              href="/profile"
+                className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
+              >
               <span className="text-sm font-semibold text-emerald-900">
                 {user.first_name} {user.last_name}
               </span>
+              </Link>
             </>
           ) : (
             <>
