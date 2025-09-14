@@ -2,7 +2,7 @@ import { useState } from "react";
 import EditEventModal from "./EditEventModal";
 import EventDetailsModal from "./EventDetailsModal";
 
-const EventCard = ({ event, onUpdated }) => {
+const EventCard = ({ event, onUpdated, onDeleted }) => {
   const [editing, setEditing] = useState(false);
   const [viewing, setViewing] = useState(false);
 
@@ -35,17 +35,30 @@ const EventCard = ({ event, onUpdated }) => {
           </div>
 
           <div className="mt-auto flex gap-2">
-            <button onClick={() => setViewing(true)} className="flex-1 px-6 py-2 bg-amber-400 text-black rounded-lg">
+            <button
+              onClick={() => setViewing(true)}
+              className="flex-1 px-6 py-2 bg-amber-400 text-black rounded-lg"
+            >
               View Details
             </button>
-            <button onClick={() => setEditing(true)} className="flex-1 bg-amber-500 text-white py-2 rounded hover:bg-amber-600 text-sm">
+            <button
+              onClick={() => setEditing(true)}
+              className="flex-1 bg-amber-500 text-white py-2 rounded hover:bg-amber-600 text-sm"
+            >
               Update Event
             </button>
           </div>
         </div>
       </div>
 
-      {editing && <EditEventModal event={event} onClose={() => setEditing(false)} onUpdated={onUpdated} />}
+      {editing && (
+        <EditEventModal
+          event={event}
+          onClose={() => setEditing(false)}
+          onUpdated={onUpdated}
+          onDeleted={onDeleted} // pass delete callback
+        />
+      )}
       {viewing && <EventDetailsModal event={event} onClose={() => setViewing(false)} />}
     </>
   );

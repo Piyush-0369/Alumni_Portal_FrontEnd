@@ -1,7 +1,6 @@
 // src/events/EditEventModal.jsx
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
 import { fetchWithRefresh } from "../utils/fetchWithRefresh";
 
 const EditEventModal = ({ event, onClose, onUpdated }) => {
@@ -40,14 +39,48 @@ const EditEventModal = ({ event, onClose, onUpdated }) => {
         }
       );
 
-      if (!res.ok) throw new Error("Failed to update event");
+      // Always read JSON/text regardless of res.ok
+      const data = await res.json().catch(async () => ({ message: await res.text() }));
 
-      const updated = await res.json();
-      onUpdated(updated.data);
+      if (!res.ok) {
+        console.error("Update failed:", res.status, data);
+        alert(`Failed to update event: ${data.message || "Unknown error"}`);
+        return; // stop further execution
+      }
+
+      // Only call onUpdated if it is a function
+      if (typeof onUpdated === "function" && data?.data) {
+        onUpdated(data.data);
+      }
       onClose();
     } catch (err) {
       console.error("Error updating event:", err);
       alert("Error updating event");
+    }
+  };
+
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm("Are you sure you want to delete this event?");
+    if (!confirmed) return;
+
+    try {
+      const res = await fetchWithRefresh(
+        `http://localhost:4000/api/v1/baseUsers/deleteEvent/${event._id}`,
+        { method: "DELETE", credentials: "include" }
+      );
+
+      if (!res.ok) throw new Error("Failed to delete event");
+
+      alert("Event deleted successfully");
+      onClose();
+      // Instead of calling onUpdated(null), use a separate callback for deletion
+      if (typeof onDeleted === "function") {
+        onDeleted(event._id);
+      }
+    } catch (err) {
+      console.error("Error deleting event:", err);
+      alert("Error deleting event");
     }
   };
 
@@ -160,15 +193,23 @@ const EditEventModal = ({ event, onClose, onUpdated }) => {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-1/2 px-6 py-2 bg-amber-400 text-black rounded-lg"
+                  className="w-1/3 px-4 py-2 bg-amber-400 text-black rounded-lg"
                 >
                   Cancel
                 </button>
+                
                 <button
                   type="submit"
-                  className="w-1/2 bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700"
+                  className="w-1/3 bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700"
                 >
                   Save Changes
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="w-1/3 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700"
+                >
+                  Delete
                 </button>
               </div>
             </form>
