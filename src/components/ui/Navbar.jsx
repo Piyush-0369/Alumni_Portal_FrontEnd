@@ -1,8 +1,20 @@
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("userData");
+    if (stored) setUser(JSON.parse(stored));
+  }, []);
+
+  const commonLinks = [
+    { name: "Profile", href: "/profile" },
+    { name: "Events", href: "/events" },
+    { name: "Admin", href: "/admin" },
+  ];
 
   return (
     <header className="w-full bg-gradient-to-r from-amber-200 to-emerald-200 border-b border-amber-100 shadow-md">
@@ -14,27 +26,50 @@ const Navbar = () => {
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
-          {["Profile", "Events", "Admin"].map((page, idx) => (
+          {commonLinks.map((page) => (
             <Link
-              key={idx}
-              href={`/${page.toLowerCase()}`}
+              key={page.name}
+              href={page.href}
               className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
             >
-              {page}
+              {page.name}
             </Link>
           ))}
-          <Link
-            href="/LoginForm"
-            className="rounded-xl bg-white bg-opacity-30 px-4 py-2 text-sm font-semibold text-emerald-800 shadow hover:bg-opacity-50 transition"
-          >
-            Login
-          </Link>
-          <Link
-            href="/SignupForm"
-            className="rounded-xl bg-white bg-opacity-30 px-4 py-2 text-sm font-semibold text-emerald-800 shadow hover:bg-opacity-50 transition"
-          >
-            Signup
-          </Link>
+
+          {user ? (
+            <>
+              <Link
+                href="/search"
+                className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
+              >
+                Search
+              </Link>
+              <Link
+                href="/chat"
+                className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
+              >
+                Chats
+              </Link>
+              <span className="text-sm font-semibold text-emerald-900">
+                {user.first_name} {user.last_name}
+              </span>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/LoginForm"
+                className="rounded-xl bg-white bg-opacity-30 px-4 py-2 text-sm font-semibold text-emerald-800 shadow hover:bg-opacity-50 transition"
+              >
+                Login
+              </Link>
+              <Link
+                href="/SignupForm"
+                className="rounded-xl bg-white bg-opacity-30 px-4 py-2 text-sm font-semibold text-emerald-800 shadow hover:bg-opacity-50 transition"
+              >
+                Signup
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* Mobile menu button */}
@@ -73,30 +108,55 @@ const Navbar = () => {
       {menuOpen && (
         <nav className="md:hidden bg-gradient-to-r from-amber-200 to-emerald-200 border-t border-amber-100">
           <div className="flex flex-col gap-3 py-4 px-4 md:px-6 w-full">
-            {["Profile", "Events", "Admin"].map((page, idx) => (
+            {commonLinks.map((page) => (
               <Link
-                key={idx}
-                href={`/${page.toLowerCase()}`}
+                key={page.name}
+                href={page.href}
                 className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
                 onClick={() => setMenuOpen(false)}
               >
-                {page}
+                {page.name}
               </Link>
             ))}
-            <Link
-              href="/LoginForm"
-              className="rounded-xl bg-white bg-opacity-30 px-4 py-2 text-sm font-semibold text-emerald-800 shadow hover:bg-opacity-50 transition text-center"
-              onClick={() => setMenuOpen(false)}
-            >
-              Login
-            </Link>
-            <Link
-              href="/SignupForm"
-              className="rounded-xl bg-white bg-opacity-30 px-4 py-2 text-sm font-semibold text-emerald-800 shadow hover:bg-opacity-50 transition text-center"
-              onClick={() => setMenuOpen(false)}
-            >
-              Signup
-            </Link>
+
+            {user ? (
+              <>
+                <Link
+                  href="/search"
+                  className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Search
+                </Link>
+                <Link
+                  href="/chat"
+                  className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Chats
+                </Link>
+                <span className="text-sm font-semibold text-emerald-900">
+                  {user.first_name} {user.last_name}
+                </span>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/LoginForm"
+                  className="rounded-xl bg-white bg-opacity-30 px-4 py-2 text-sm font-semibold text-emerald-800 shadow hover:bg-opacity-50 transition text-center"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/SignupForm"
+                  className="rounded-xl bg-white bg-opacity-30 px-4 py-2 text-sm font-semibold text-emerald-800 shadow hover:bg-opacity-50 transition text-center"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Signup
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       )}
