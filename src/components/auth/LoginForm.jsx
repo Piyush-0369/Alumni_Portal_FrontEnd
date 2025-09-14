@@ -13,36 +13,37 @@ const LoginForm = () => {
   const router = useRouter();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setErrorMsg("");
+  e.preventDefault();
+  setErrorMsg("");
 
+  try {
+    const res = await fetchWithRefresh(`${BASE_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role, email, password }),
+      credentials: "include",
+    });
+
+    const text = await res.text();
+    let data;
     try {
-      const res = await fetchWithRefresh(`${BASE_URL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role, email, password }),
-        credentials: "include",
-      });
-
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        setErrorMsg("Unexpected response from server");
-        return;
-      }
-
-      if (res.ok && data.success) {
-        localStorage.setItem("userData", JSON.stringify(data.data));
-        router.push("/profile");
-      } else {
-        setErrorMsg(data.message || "Invalid credentials");
-      }
+      data = JSON.parse(text);
     } catch {
-      setErrorMsg("Network error. Please try again.");
+      setErrorMsg("Unexpected response from server");
+      return;
     }
-  };
+
+    if (res.ok && data.success) {
+      localStorage.setItem("userData", JSON.stringify(data.data));
+      window.location.href = "/profile"; // 👈 Force reload for Navbar refresh
+    } else {
+      setErrorMsg(data.message || "Invalid credentials");
+    }
+  } catch {
+    setErrorMsg("Network error. Please try again.");
+  }
+};
+
 
   return (
     <form
