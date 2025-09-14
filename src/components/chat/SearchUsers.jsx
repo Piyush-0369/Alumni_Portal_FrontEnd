@@ -14,7 +14,7 @@ export default function SearchUsers() {
     if (!role) { alert("Choose a role to search (Student or Alumni)"); return; }
     setLoading(true);
     try {
-      const res = await fetchWithRefresh(`http://localhost:4000/api/v1/baseUsers/search?role=${role}&q=${encodeURIComponent(q)}`, {
+      const res = await fetchWithRefresh(`http://localhost:4000/api/v1/baseUsers/searchUser?role=${role}&q=${encodeURIComponent(q)}`, {
         credentials: "include",
       });
       if (!res.ok) {
