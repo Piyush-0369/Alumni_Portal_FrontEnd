@@ -53,7 +53,7 @@ const EditEventModal = ({ event, onClose, onUpdated }) => {
 
   return (
     <AnimatePresence>
-      {true && ( // always render while open
+      {event && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -67,14 +67,6 @@ const EditEventModal = ({ event, onClose, onUpdated }) => {
             transition={{ duration: 0.2 }}
             className="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full relative"
           >
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-200"
-            >
-              <X size={24} />
-            </button>
-
             <h2 className="text-2xl font-bold mb-4 text-emerald-700">
               Edit Event
             </h2>
@@ -163,12 +155,22 @@ const EditEventModal = ({ event, onClose, onUpdated }) => {
                 <option value="Cancelled">Cancelled</option>
               </select>
 
-              <button
-                type="submit"
-                className="w-full bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700"
-              >
-                Save Changes
-              </button>
+              {/* Action buttons */}
+              <div className="flex justify-between gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-1/2 px-6 py-2 bg-amber-400 text-black rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700"
+                >
+                  Save Changes
+                </button>
+              </div>
             </form>
           </motion.div>
         </motion.div>

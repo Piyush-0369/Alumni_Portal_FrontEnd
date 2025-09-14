@@ -8,9 +8,14 @@ const EventList = ({ events, setEvents }) => {
   };
 
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="flex flex-wrap gap-6 w-full">
       {events.map((event) => (
-        <EventCard key={event._id} event={event} onUpdated={handleEventUpdated} />
+        <div
+          key={event._id}
+          className="w-full sm:w-1/2 lg:w-1/3"
+        >
+          <EventCard event={event} onUpdated={handleEventUpdated} />
+        </div>
       ))}
     </div>
   );
