@@ -5,12 +5,12 @@ import { fetchWithRefresh } from "../../utils/fetchWithRefresh";
 export default function SignupForm() {
   const router = useRouter();
 
-  const [role, setRole] = useState("");
-  const [step, setStep] = useState("email"); // "email" → "otp" → "form"
+  const [role, setRole] = useState("Student");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -26,15 +26,13 @@ export default function SignupForm() {
     avatar: null,
   });
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [previewImage, setPreviewImage] = useState(null);
 
-  // ✅ Handle input change
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ✅ Handle avatar upload
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -43,13 +41,12 @@ export default function SignupForm() {
     }
   };
 
-  // ✅ Step 1: Send OTP
+  // Send OTP
   const handleSendOtp = async () => {
     if (!email) {
       alert("Please enter an email");
       return;
     }
-
     if (role === "Student" && !email.endsWith("@college.edu")) {
       alert("Please use your valid college email ID");
       return;
@@ -62,27 +59,25 @@ export default function SignupForm() {
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok) {
         setOtpSent(true);
-        setStep("otp");
-        alert("✅ OTP sent to " + email);
+        alert("OTP sent to " + email);
       } else {
+        const data = await res.json();
         alert(data.message || "Failed to send OTP");
       }
     } catch (err) {
       console.error(err);
-      alert("Server error while sending OTP");
+      alert("Failed to send OTP");
     }
   };
 
-  // ✅ Step 2: Verify OTP
+  // Verify OTP
   const handleVerifyOtp = async () => {
     if (!otp) {
       alert("Please enter OTP");
       return;
     }
-
     try {
       const res = await fetchWithRefresh("http://localhost:4000/api/v1/otp/verify", {
         method: "POST",
@@ -91,30 +86,24 @@ export default function SignupForm() {
       });
 
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok) {
         setVerified(true);
-        setStep("form");
         alert("✅ Email verified successfully!");
       } else {
-        alert(data.message || "❌ OTP does not match.");
+        alert(data.message || "❌ OTP verification failed.");
       }
     } catch (err) {
       console.error(err);
-      alert("Verification failed. Please try again.");
+      alert("Verification failed");
     }
   };
 
-  const handleResendOtp = async () => {
-    if (!email) {
-      alert("Enter email before resending OTP");
-      return;
-    }
-    await handleSendOtp(); // just reuse send API
-  };
-
-  // ✅ Step 3: Submit final form (unchanged)
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!verified) {
+      alert("Please verify your email before signing up.");
+      return;
+    }
     if (formData.password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
@@ -141,12 +130,11 @@ export default function SignupForm() {
         alert(data.message || "Signup failed");
       }
     } catch (err) {
-      alert("Something went wrong. Please try again.");
       console.error(err);
+      alert("Something went wrong. Please try again.");
     }
   };
 
-  // JSX (unchanged except OTP parts already integrated above)
   return (
     <form
       onSubmit={handleSubmit}
@@ -158,78 +146,188 @@ export default function SignupForm() {
           <button
             key={r}
             type="button"
-            onClick={() => !verified && setRole(r)}
-            disabled={verified}
+            onClick={() => setRole(r)}
             className={`px-4 py-2 rounded-lg font-medium transition 
               ${role === r
                 ? "bg-amber-400 text-white shadow-md"
                 : "bg-emerald-200 text-emerald-800 hover:bg-emerald-300"
-              }
-              ${verified ? "opacity-50 cursor-not-allowed" : ""}`}
+              }`}
           >
             {r}
           </button>
         ))}
       </div>
 
-      {/* Step 1: Email */}
-      {step === "email" && role && (
-        <>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full mb-4 p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
-            required
-          />
+      {/* Email + Verify */}
+      <div className="flex gap-2 mb-4">
+        <input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={verified}
+          className="flex-1 p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+          required
+        />
+        {!verified && (
           <button
             type="button"
             onClick={handleSendOtp}
-            className="w-full py-3 rounded-lg bg-amber-400 text-white font-semibold hover:bg-amber-500 transition-colors"
+            className="px-4 py-2 rounded-lg bg-amber-400 text-white font-semibold hover:bg-amber-500 transition-colors"
           >
-            Send OTP
+            {otpSent ? "Resend OTP" : "Verify Email"}
           </button>
-        </>
-      )}
+        )}
+      </div>
 
-      {/* Step 2: OTP */}
-      {step === "otp" && (
-        <>
+      {/* OTP Field */}
+      {otpSent && !verified && (
+        <div className="flex gap-2 mb-4">
           <input
             type="text"
             placeholder="Enter OTP"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
-            className="w-full mb-4 p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+            className="flex-1 p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
             required
           />
-          <div className="flex justify-between">
-            <button
-              type="button"
-              onClick={handleResendOtp}
-              className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
-            >
-              Resend OTP
-            </button>
-            <button
-              type="button"
-              onClick={handleVerifyOtp}
-              className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
-            >
-              Verify OTP
-            </button>
-          </div>
-        </>
+          <button
+            type="button"
+            onClick={handleVerifyOtp}
+            className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 transition"
+          >
+            Verify OTP
+          </button>
+        </div>
       )}
 
-      {/* Step 3: Form → stays the same */}
-      {step === "form" && verified && (
-        <>
-          {/* Your existing form fields remain unchanged */}
-          {/* ... */}
-        </>
+      {/* Names */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        {["first_name", "middle_name", "last_name"].map((field, idx) => (
+          <input
+            key={idx}
+            type="text"
+            name={field}
+            placeholder={field.replace("_", " ").toUpperCase()}
+            value={formData[field]}
+            onChange={handleChange}
+            className="w-full p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+            required={field !== "middle_name"}
+          />
+        ))}
+      </div>
+
+      {/* Passwords */}
+      <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        value={formData.password}
+        onChange={handleChange}
+        className="w-full mb-4 p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+        required
+      />
+      <input
+        type="password"
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        className="w-full mb-6 p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+        required
+      />
+
+      {/* Role-specific */}
+      {role === "Student" && (
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <input
+            type="text"
+            name="college_roll"
+            placeholder="College Roll"
+            value={formData.college_roll}
+            onChange={handleChange}
+            className="p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+            required
+          />
+          <input
+            type="text"
+            name="course"
+            placeholder="Course"
+            value={formData.course}
+            onChange={handleChange}
+            className="p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+            required
+          />
+          <input
+            type="number"
+            name="batch_year"
+            placeholder="Batch Year"
+            value={formData.batch_year}
+            onChange={handleChange}
+            className="p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+            required
+          />
+        </div>
       )}
+
+      {role === "Alumni" && (
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <input
+            type="text"
+            name="degree"
+            placeholder="Degree"
+            value={formData.degree}
+            onChange={handleChange}
+            className="p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+            required
+          />
+          <input
+            type="text"
+            name="department"
+            placeholder="Department"
+            value={formData.department}
+            onChange={handleChange}
+            className="p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+            required
+          />
+          <input
+            type="number"
+            name="batch_year"
+            placeholder="Batch Year"
+            value={formData.batch_year}
+            onChange={handleChange}
+            className="p-3 border border-emerald-300 rounded-lg focus:ring-2 focus:ring-emerald-400"
+            required
+          />
+        </div>
+      )}
+
+      {/* Avatar */}
+      <input
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="w-full mb-6"
+      />
+      {previewImage && (
+        <img
+          src={previewImage}
+          alt="Profile Preview"
+          className="h-20 w-20 object-cover rounded-full border mb-4"
+        />
+      )}
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={!verified}
+        className={`w-full py-3 rounded-lg font-semibold transition-colors 
+          ${verified
+            ? "bg-amber-400 text-white hover:bg-amber-500"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
+      >
+        Sign Up
+      </button>
     </form>
   );
 }
