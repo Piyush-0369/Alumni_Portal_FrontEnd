@@ -1,47 +1,67 @@
 import { useEffect, useState } from "react";
 import { fetchWithRefresh } from "../utils/fetchWithRefresh";
 
+const BASE_URL = "http://localhost:4000/api/v1/baseUsers";
+
 export default function Profile() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("userData");
-    if (saved) {
+    const fetchProfile = async () => {
       try {
-        setUserData(JSON.parse(saved));
-      } catch (err) {
-        console.error("Failed to parse userData:", err);
-        setUserData({ error: "Invalid stored data" });
+        const res = await fetchWithRefresh(`${BASE_URL}/getProfile`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch profile");
+        }
+
+        const data = await res.json();
+        if (data.success) {
+          setUserData(data.data);
+          localStorage.setItem("userData", JSON.stringify(data.data));
+        } else {
+          setUserData({ error: data.message || "Unable to load profile" });
+        }
+      } catch (error) {
+        console.error("Profile fetch failed:", error);
+
+        const saved = localStorage.getItem("userData");
+        if (saved) {
+          try {
+            setUserData(JSON.parse(saved));
+          } catch {
+            setUserData({ error: "Invalid stored data" });
+          }
+        } else {
+          setUserData({ error: "No profile found" });
+        }
+      } finally {
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    };
+
+    fetchProfile();
   }, []);
 
   const handleLogout = async () => {
     try {
-      await fetchWithRefresh(
-        "http://localhost:4000/api/v1/baseUsers/logout",
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      await fetchWithRefresh(`${BASE_URL}/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
     } catch (error) {
       console.warn("Server logout failed, clearing client session anyway", error);
     } finally {
-      // ✅ Always clear client-side session
       localStorage.removeItem("userData");
-
-      // ✅ Force clear cookies manually
       document.cookie = "accessToken=; Max-Age=0; path=/;";
       document.cookie = "refreshToken=; Max-Age=0; path=/;";
-
-      // ✅ Hard reload
       window.location.href = "/";
     }
   };
-
 
   const handleDeleteAccount = async () => {
     if (!confirm("Are you sure you want to delete your account? This cannot be undone.")) {
@@ -49,26 +69,21 @@ export default function Profile() {
     }
 
     try {
-      const response = await fetchWithRefresh(
-        "http://localhost:4000/api/v1/baseUsers/deleteAccount",
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
+      const response = await fetchWithRefresh(`${BASE_URL}/deleteAccount`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       if (response.ok) {
         localStorage.removeItem("userData");
         alert("Your account has been deleted.");
-        window.location.href = "/"; // 🔥 force reload
+        window.location.href = "/";
       } else {
         let errMsg = "Please try again";
         try {
           const err = await response.json();
           errMsg = err?.message || errMsg;
-        } catch {
-          // ignore empty/invalid JSON
-        }
+        } catch {}
         alert("Failed to delete account: " + errMsg);
       }
     } catch (error) {
@@ -98,7 +113,7 @@ export default function Profile() {
         {/* Error case */}
         {userData?.error && (
           <div className="max-w-md bg-red-200 p-6 rounded-2xl shadow text-center">
-            <h3 className="text-xl font-bold mb-2">Login Failed</h3>
+            <h3 className="text-xl font-bold mb-2">Profile Error</h3>
             <p>{userData.error}</p>
             <button
               className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -109,8 +124,23 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Success case */}
-        {userData && !userData.error && (
+        {/* Admin case */}
+        {userData?.role === "admin" && (
+          <div className="max-w-lg w-full bg-emerald-100 p-8 rounded-2xl shadow flex flex-col items-center">
+            <h3 className="text-2xl font-bold text-gray-800 text-center">
+              Welcome Admin
+            </h3>
+            <button
+              className="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </div>
+        )}
+
+        {/* Student / Alumni case */}
+        {userData && !userData.error && userData.role !== "admin" && (
           <div className="max-w-lg w-full bg-peach-50/90 p-8 rounded-2xl shadow flex flex-col items-center">
             {userData?.avatar && (
               <img

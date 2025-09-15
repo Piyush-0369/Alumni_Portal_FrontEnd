@@ -1,7 +1,6 @@
 import EventCard from "./EventCard";
 
-const EventList = ({ events, setEvents }) => {
-  // Handle event updates (Edit)
+const EventList = ({ events, setEvents, userRole }) => {
   const handleEventUpdated = (updatedEvent) => {
     if (!updatedEvent || typeof setEvents !== "function") return;
     setEvents((prev) =>
@@ -9,7 +8,6 @@ const EventList = ({ events, setEvents }) => {
     );
   };
 
-  // Handle event deletion
   const handleEventDeleted = (deletedId) => {
     if (!deletedId) return;
     setEvents((prev) => prev.filter((ev) => ev._id !== deletedId));
@@ -21,8 +19,9 @@ const EventList = ({ events, setEvents }) => {
         <div key={event._id} className="w-full sm:w-1/2 lg:w-1/3">
           <EventCard
             event={event}
+            userRole={userRole} // ✅ pass role down
             onUpdated={handleEventUpdated}
-            onDeleted={handleEventDeleted} // pass delete handler
+            onDeleted={handleEventDeleted}
           />
         </div>
       ))}
