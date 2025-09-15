@@ -20,26 +20,28 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetchWithRefresh(
+      await fetchWithRefresh(
         "http://localhost:4000/api/v1/baseUsers/logout",
         {
           method: "POST",
           credentials: "include",
         }
       );
-
-      if (response.ok) {
-        localStorage.removeItem("userData");
-        window.location.href = "/";
-      } else {
-        const err = await response.json();
-        alert("Logout failed: " + (err?.message || "Please try again"));
-      }
     } catch (error) {
-      console.error("Error during logout:", error);
-      alert("Error connecting to server.");
+      console.warn("Server logout failed, clearing client session anyway", error);
+    } finally {
+      // ✅ Always clear client-side session
+      localStorage.removeItem("userData");
+
+      // ✅ Force clear cookies manually
+      document.cookie = "accessToken=; Max-Age=0; path=/;";
+      document.cookie = "refreshToken=; Max-Age=0; path=/;";
+
+      // ✅ Hard reload
+      window.location.href = "/";
     }
   };
+
 
   const handleDeleteAccount = async () => {
     if (!confirm("Are you sure you want to delete your account? This cannot be undone.")) {
@@ -58,10 +60,16 @@ export default function Profile() {
       if (response.ok) {
         localStorage.removeItem("userData");
         alert("Your account has been deleted.");
-        window.location.href = "/";
+        window.location.href = "/"; // 🔥 force reload
       } else {
-        const err = await response.json();
-        alert("Failed to delete account: " + (err?.message || "Please try again"));
+        let errMsg = "Please try again";
+        try {
+          const err = await response.json();
+          errMsg = err?.message || errMsg;
+        } catch {
+          // ignore empty/invalid JSON
+        }
+        alert("Failed to delete account: " + errMsg);
       }
     } catch (error) {
       console.error("Error deleting account:", error);

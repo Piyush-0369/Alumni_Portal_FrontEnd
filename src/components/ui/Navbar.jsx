@@ -7,12 +7,14 @@ const Navbar = () => {
 
   useEffect(() => {
     const stored = localStorage.getItem("userData");
-    if (stored) setUser(JSON.parse(stored));
+    if (stored) {
+      setUser(JSON.parse(stored));
+    }
   }, []);
 
   const commonLinks = [
     { name: "Events", href: "/events" },
-    { name: "Admin", href: "/admin" },
+    // Admin will be conditionally added below
   ];
 
   return (
@@ -35,6 +37,16 @@ const Navbar = () => {
             </Link>
           ))}
 
+          {/* Admin visible only for admins */}
+          {user?.role === "admin" && (
+            <Link
+              href="/admin"
+              className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
+            >
+              Admin
+            </Link>
+          )}
+
           {user ? (
             <>
               <Link
@@ -50,12 +62,12 @@ const Navbar = () => {
                 Chats
               </Link>
               <Link
-              href="/profile"
+                href="/profile"
                 className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
               >
-              <span className="text-sm font-semibold text-emerald-900">
-                {user.first_name} {user.last_name}
-              </span>
+                <span className="text-sm font-semibold text-emerald-900">
+                  {user.first_name} {user.last_name}
+                </span>
               </Link>
             </>
           ) : (
@@ -122,6 +134,17 @@ const Navbar = () => {
                 {page.name}
               </Link>
             ))}
+
+            {/* Admin visible only for admins */}
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                Admin
+              </Link>
+            )}
 
             {user ? (
               <>
