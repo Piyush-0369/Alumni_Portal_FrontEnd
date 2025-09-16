@@ -1,10 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EditEventModal from "./EditEventModal";
 import EventDetailsModal from "./EventDetailsModal";
+import { fetchWithRefresh } from "../utils/fetchWithRefresh";
+
+const BASE_URL = "http://localhost:4000/api/v1/baseUsers";
 
 const EventCard = ({ event, onUpdated, onDeleted }) => {
   const [editing, setEditing] = useState(false);
   const [viewing, setViewing] = useState(false);
+  const [role, setRole] = useState(null); // store user role
+
+  // Fetch profile on mount to get role
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetchWithRefresh(`${BASE_URL}/getProfile`, {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        const data = await res.json();
+        if (data.success) {
+          setRole(data.data.role);
+        } else {
+          setRole(null);
+        }
+      } catch (err) {
+        console.error("Profile fetch failed:", err);
+        setRole(null);
+      }
+    };
+    fetchProfile();
+  }, []);
 
   return (
     <>
@@ -41,12 +68,16 @@ const EventCard = ({ event, onUpdated, onDeleted }) => {
             >
               View Details
             </button>
-            <button
-              onClick={() => setEditing(true)}
-              className="flex-1 bg-amber-500 text-white py-2 rounded hover:bg-amber-600 text-sm"
-            >
-              Update Event
-            </button>
+
+            {/* Only show "Update Event" button if user is admin */}
+            {role === "admin" && (
+              <button
+                onClick={() => setEditing(true)}
+                className="flex-1 bg-amber-500 text-white py-2 rounded hover:bg-amber-600 text-sm"
+              >
+                Update Event
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -56,10 +87,12 @@ const EventCard = ({ event, onUpdated, onDeleted }) => {
           event={event}
           onClose={() => setEditing(false)}
           onUpdated={onUpdated}
-          onDeleted={onDeleted} // pass delete callback
+          onDeleted={onDeleted}
         />
       )}
-      {viewing && <EventDetailsModal event={event} onClose={() => setViewing(false)} />}
+      {viewing && (
+        <EventDetailsModal event={event} onClose={() => setViewing(false)} />
+      )}
     </>
   );
 };
