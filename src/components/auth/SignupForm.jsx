@@ -125,7 +125,7 @@ export default function SignupForm() {
       const res = await fetchWithRefresh(url, { method: "POST", body: dataToSend });
       const data = await res.json();
       if (res.ok) {
-        router.push("/profile");
+        router.push("/LoginForm");
       } else {
         alert(data.message || "Signup failed");
       }
