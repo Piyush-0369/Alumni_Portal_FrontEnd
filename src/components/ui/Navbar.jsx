@@ -1,21 +1,38 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
+const BASE_URL = "http://localhost:4000/api/v1/baseUsers";
+
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem("userData");
-    if (stored) {
-      setUser(JSON.parse(stored));
-    }
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/getProfile`, {
+          method: "GET",
+          credentials: "include", // important for cookies
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.data || null);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
-  const commonLinks = [
-    { name: "Events", href: "/events" },
-    // Admin will be conditionally added below
-  ];
+  const commonLinks = [{ name: "Events", href: "/events" }];
 
   return (
     <header className="w-full bg-gradient-to-r from-amber-200 to-emerald-200 border-b border-amber-100 shadow-md">
@@ -37,8 +54,8 @@ const Navbar = () => {
             </Link>
           ))}
 
-          {/* Admin visible only for admins */}
-          {user?.role === "admin" && (
+          {/* Admin only */}
+          {user?.role === "Admin" && (
             <Link
               href="/admin"
               className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
@@ -47,7 +64,7 @@ const Navbar = () => {
             </Link>
           )}
 
-          {user ? (
+          {loading ? null : user ? (
             <>
               <Link
                 href="/search"
@@ -135,8 +152,8 @@ const Navbar = () => {
               </Link>
             ))}
 
-            {/* Admin visible only for admins */}
-            {user?.role === "admin" && (
+            {/* Admin only */}
+            {user?.role === "Admin" && (
               <Link
                 href="/admin"
                 className="text-sm font-medium text-emerald-800 hover:text-emerald-900 transition-colors"
@@ -146,7 +163,7 @@ const Navbar = () => {
               </Link>
             )}
 
-            {user ? (
+            {loading ? null : user ? (
               <>
                 <Link
                   href="/search"

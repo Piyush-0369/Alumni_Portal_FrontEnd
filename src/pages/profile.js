@@ -7,6 +7,21 @@ export default function Profile() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const handleLogout = async (redirectToLogin = false) => {
+    try {
+      await fetchWithRefresh(`${BASE_URL}/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.warn("Server logout failed, clearing client session anyway", error);
+    } finally {
+      document.cookie = "accessToken=; Max-Age=0; path=/;";
+      document.cookie = "refreshToken=; Max-Age=0; path=/;";
+      window.location.href = redirectToLogin ? "/LoginForm" : "/";
+    }
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -16,29 +31,21 @@ export default function Profile() {
         });
 
         if (!res.ok) {
-          throw new Error("Failed to fetch profile");
+          // 🚨 Invalid/expired cookies → logout → /login
+          await handleLogout(true);
+          return;
         }
 
         const data = await res.json();
         if (data.success) {
           setUserData(data.data);
-          localStorage.setItem("userData", JSON.stringify(data.data));
         } else {
-          setUserData({ error: data.message || "Unable to load profile" });
+          // 🚨 Backend says not valid → logout → /login
+          await handleLogout(true);
         }
       } catch (error) {
         console.error("Profile fetch failed:", error);
-
-        const saved = localStorage.getItem("userData");
-        if (saved) {
-          try {
-            setUserData(JSON.parse(saved));
-          } catch {
-            setUserData({ error: "Invalid stored data" });
-          }
-        } else {
-          setUserData({ error: "No profile found" });
-        }
+        await handleLogout(true); // 🚨 Any error → /login
       } finally {
         setLoading(false);
       }
@@ -46,22 +53,6 @@ export default function Profile() {
 
     fetchProfile();
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await fetchWithRefresh(`${BASE_URL}/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (error) {
-      console.warn("Server logout failed, clearing client session anyway", error);
-    } finally {
-      localStorage.removeItem("userData");
-      document.cookie = "accessToken=; Max-Age=0; path=/;";
-      document.cookie = "refreshToken=; Max-Age=0; path=/;";
-      window.location.href = "/";
-    }
-  };
 
   const handleDeleteAccount = async () => {
     if (!confirm("Are you sure you want to delete your account? This cannot be undone.")) {
@@ -75,9 +66,8 @@ export default function Profile() {
       });
 
       if (response.ok) {
-        localStorage.removeItem("userData");
         alert("Your account has been deleted.");
-        window.location.href = "/";
+        await handleLogout(true); // go back to login after deletion
       } else {
         let errMsg = "Please try again";
         try {
@@ -105,34 +95,15 @@ export default function Profile() {
       <main className="p-8 flex flex-col items-center">
         <h2 className="text-3xl font-bold mb-6 text-gray-800">Profile</h2>
 
-        {/* No data */}
-        {!userData && (
-          <p className="text-gray-800">This is where profile details will be displayed.</p>
-        )}
-
-        {/* Error case */}
-        {userData?.error && (
-          <div className="max-w-md bg-red-200 p-6 rounded-2xl shadow text-center">
-            <h3 className="text-xl font-bold mb-2">Profile Error</h3>
-            <p>{userData.error}</p>
-            <button
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              onClick={handleLogout}
-            >
-              Go Back
-            </button>
-          </div>
-        )}
-
         {/* Admin case */}
-        {userData?.role === "admin" && (
+        {userData?.role === "Admin" && (
           <div className="max-w-lg w-full bg-emerald-100 p-8 rounded-2xl shadow flex flex-col items-center">
             <h3 className="text-2xl font-bold text-gray-800 text-center">
               Welcome Admin
             </h3>
             <button
               className="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              onClick={handleLogout}
+              onClick={() => handleLogout(true)}
             >
               Logout
             </button>
@@ -140,7 +111,7 @@ export default function Profile() {
         )}
 
         {/* Student / Alumni case */}
-        {userData && !userData.error && userData.role !== "admin" && (
+        {userData && userData.role !== "Admin" && (
           <div className="max-w-lg w-full bg-peach-50/90 p-8 rounded-2xl shadow flex flex-col items-center">
             {userData?.avatar && (
               <img
@@ -161,7 +132,7 @@ export default function Profile() {
               <p><strong>Batch Year:</strong> {userData.batch_year}</p>
             </div>
 
-            {userData.role === "student" && (
+            {userData.role === "Student" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mt-4">
                 <p><strong>College Roll:</strong> {userData.college_roll}</p>
                 <p><strong>Course:</strong> {userData.course}</p>
@@ -169,7 +140,7 @@ export default function Profile() {
               </div>
             )}
 
-            {userData.role === "alumni" && (
+            {userData.role === "Alumni" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mt-4">
                 <p><strong>Degree:</strong> {userData.degree}</p>
                 <p><strong>Department:</strong> {userData.department}</p>
@@ -179,7 +150,7 @@ export default function Profile() {
             <div className="flex gap-4 mt-6">
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                onClick={handleLogout}
+                onClick={() => handleLogout(true)}
               >
                 Logout
               </button>
