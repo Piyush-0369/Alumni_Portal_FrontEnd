@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Button from "../ui/Button";
 import { fetchWithRefresh } from "../../utils/fetchWithRefresh";
@@ -12,16 +12,44 @@ const LoginForm = () => {
   const [errorMsg, setErrorMsg] = useState(""); 
   const router = useRouter();
 
+  // Redirect if already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetchWithRefresh(`${BASE_URL}/getProfile`, {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            router.replace("/profile"); // Already logged in
+          }
+        }
+      } catch {
+        // Not logged in, do nothing
+      }
+    };
+
+    checkSession();
+  }, [router]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg("");
+
+    if (!role || !email || !password) {
+      setErrorMsg("Please fill all fields");
+      return;
+    }
 
     try {
       const res = await fetchWithRefresh(`${BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, email, password }),
-        credentials: "include", // ✅ ensures cookies (tokens) are stored
+        credentials: "include",
       });
 
       const text = await res.text();
@@ -34,9 +62,8 @@ const LoginForm = () => {
       }
 
       if (res.ok && data.success) {
-        // ✅ Don’t store anything in localStorage
-        // Redirect to profile, which fetches user info from backend
-        router.push("/profile");
+        // Force a full reload so Navbar picks up session cookies
+        window.location.href = "/profile";
       } else {
         setErrorMsg(data.message || "Invalid credentials");
       }
@@ -50,18 +77,15 @@ const LoginForm = () => {
       onSubmit={handleLogin}
       className="w-full p-6 bg-[var(--color-surface)] rounded-2xl shadow-soft-lg relative overflow-hidden"
     >
-      {/* Decorative gradient inside card */}
       <div className="absolute inset-0 bg-gradient-to-tr from-amber-200/20 to-emerald-200/20 pointer-events-none rounded-2xl" />
-
       <div className="relative z-10">
         <h2 className="text-2xl font-semibold text-emerald-800 mb-4">Log in</h2>
 
-        {/* Error message */}
         {errorMsg && (
           <div className="mb-4 p-2 bg-red-200 text-red-800 rounded">{errorMsg}</div>
         )}
 
-        {/* Role selector as buttons */}
+        {/* Role selector */}
         <div className="flex justify-center gap-4 mb-6">
           {["Student", "Alumni", "Admin"].map((r) => (
             <button
@@ -79,7 +103,6 @@ const LoginForm = () => {
           ))}
         </div>
 
-        {/* Email & Password */}
         <input
           type="email"
           placeholder="Email"
