@@ -3,6 +3,10 @@ import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import EventList from "../events/EventList";
 import { fetchWithRefresh } from "../utils/fetchWithRefresh";
+import EditEventModal from "../events/EditEventModal";
+import EventDetailsModal from "../events/EventDetailsModal";
+
+const BASE_URL = "http://localhost:4000/api/v1/baseUsers";
 
 const EventsPage = () => {
   const [events, setEvents] = useState([]);
@@ -12,9 +16,15 @@ const EventsPage = () => {
 
   const [mode, setMode] = useState("all"); // all, online, offline
   const [dateFilter, setDateFilter] = useState("all"); // all, upcoming, past
-
   const [openDropdown, setOpenDropdown] = useState(null); // "date" | "mode" | null
 
+  // Modal state lifted
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [viewingEvent, setViewingEvent] = useState(null);
+
+  const [userRole, setUserRole] = useState(null);
+
+  // Fetch events
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -22,7 +32,6 @@ const EventsPage = () => {
           "http://localhost:4000/api/v1/baseUsers/getAllEvents",
           { credentials: "include" }
         );
-
         if (!res.ok) throw new Error("Failed to fetch events");
         const data = await res.json();
         const eventsList = Array.isArray(data?.data?.events) ? data.data.events : [];
@@ -38,16 +47,31 @@ const EventsPage = () => {
     fetchEvents();
   }, []);
 
-  // filtering logic
+  // Fetch profile to get role
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetchWithRefresh(`${BASE_URL}/getProfile`, {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setUserRole(data?.data?.role || null);
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Filtering logic
   useEffect(() => {
     let result = [...events];
     const now = new Date();
 
     if (mode !== "all") {
-      result = result.filter((e) => {
-      const eventMode = (e.mode || "").toLowerCase(); // normalize
-      return mode === "online" ? eventMode === "online" : eventMode === "offline";
-      });
+      result = result.filter((e) => (e.mode || "").toLowerCase() === mode);
     }
 
     if (dateFilter !== "all") {
@@ -65,7 +89,7 @@ const EventsPage = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200 p-6"
+      className="min-h-screen bg-gradient-to-br from-amber-100 via-emerald-50 to-emerald-200 p-6 relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
@@ -109,7 +133,7 @@ const EventsPage = () => {
               onClick={() => setOpenDropdown(openDropdown === "mode" ? null : "mode")}
               className="flex items-center gap-2 bg-white border border-emerald-400 px-3 py-2 rounded-lg shadow hover:bg-emerald-100 transition"
             >
-               Mode <ChevronDown className="w-4 h-4" />
+              Mode <ChevronDown className="w-4 h-4" />
             </button>
             {openDropdown === "mode" && (
               <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg border border-emerald-200 z-10">
@@ -134,7 +158,37 @@ const EventsPage = () => {
       </div>
 
       {/* Event List */}
-      <EventList events={filteredEvents} />
+      <EventList
+        events={filteredEvents}
+        onEdit={(event) => setEditingEvent(event)}
+        onView={(event) => setViewingEvent(event)}
+        userRole={userRole}
+      />
+
+      {/* Modals rendered at top-level */}
+      {editingEvent && (
+        <EditEventModal
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+          onUpdated={(updatedEvent) => {
+            setEvents((prev) =>
+              prev.map((ev) => (ev._id === updatedEvent._id ? updatedEvent : ev))
+            );
+            setEditingEvent(null);
+          }}
+          onDeleted={(deletedId) => {
+            setEvents((prev) => prev.filter((ev) => ev._id !== deletedId));
+            setEditingEvent(null);
+          }}
+        />
+      )}
+
+      {viewingEvent && (
+        <EventDetailsModal
+          event={viewingEvent}
+          onClose={() => setViewingEvent(null)}
+        />
+      )}
     </motion.div>
   );
 };
