@@ -42,7 +42,7 @@ export default function Landing() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 1.2, ease: "easeInOut" }}
-            className="absolute inset-0 object-cover w-full h-full opacity-60"
+            className="absolute inset-0 object-cover w-full h-full opacity-80"
           />
         </AnimatePresence>
         {/* Dark overlay for better text contrast */}
@@ -52,9 +52,10 @@ export default function Landing() {
 
       {/* Overlay content */}
       <main className="relative flex-1 flex flex-col items-center justify-center text-center p-8 sm:p-20 z-10">
-        <h1 className="text-4xl sm:text-5xl font-bold mb-6 text-emerald-900 drop-shadow-lg">
+        <h1 className="text-4xl sm:text-5xl font-extrabold mb-6 text-indigo-100 drop-shadow-[0_4px_6px_rgba(0,0,0,0.7)]">
           Welcome to Alumni Portal
         </h1>
+
         <p className="text-lg sm:text-xl text-gray-800 mb-8 max-w-xl bg-white/60 rounded-lg p-4 shadow">
           Connect with fellow alumni, participate in events, and explore mentorship opportunities.
         </p>
